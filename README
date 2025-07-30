@@ -1,0 +1,17 @@
+Flower --> http://localhost:5555
+
+fastapi container --> docker compose exec -it fastapi bash
+
+redis container --> docker compose exec -it redis redis-cli
+
+KEYS \* # Lists all keys
+GET my_key # Gets the value of a string key
+HGETALL user:123 # Shows all fields in a hash
+LRANGE messages 0 -1 # Gets all elements in a list
+
+GET celery-task-meta-e71d8922-6d2c-4dd9-80ff-02ef2092273a --> {
+"status": "SUCCESS",
+"result": "...",  
+ "traceback": null,
+"children": []
+}
