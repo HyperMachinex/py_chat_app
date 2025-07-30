@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login / Register</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
+        form { border: 1px solid #ccc; padding: 20px; margin-bottom: 30px; }
+        h2 { margin-top: 0; }
+        label { display: block; margin: 10px 0 5px; }
+        input { width: 90%; padding: 8px; }
+        button { margin-top: 10px; padding: 10px; width: 95%; }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome</h1>
+
+    <!-- Login Block -->
+    <form action="/login" method="post">
+        <h2>Login</h2>
+        <label>Username</label>
+        <input type="text" name="username" required>
+        
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <!-- Register Block -->
+    <form action="/signup" method="post">
+        <h2>Create a new account</h2>
+        <label>Username</label>
+        <input type="text" name="new_username" required>
+
+        <label>Password</label>
+        <input type="password" name="new_password" required>
+
+        <button type="submit">Register</button>
+    </form>
+
+</body>
+</html>
+
