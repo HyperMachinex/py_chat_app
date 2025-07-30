@@ -1,0 +1,57 @@
+
+services:
+  redis:
+    image: redis:7
+    container_name: chat_redis
+    ports:
+      - "6379:6379"
+
+  fastapi:
+    build:
+      context: .
+    container_name: chat_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  celery_worker:
+    build:
+      context: .
+    container_name: chat_celery_worker
+    command: celery -A celery_worker worker --loglevel=info -E --hostname=worker1@%h
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+
+  flower:
+    image: mher/flower
+    container_name: chat_flower
+    ports:
+      - "5555:5555"
+    command: >
+      celery --broker=redis://redis:6379/0 flower --port=5555
+    depends_on:
+      - redis
+    environment:
+      - FLOWER_UNAUTHENTICATED_API=true
+    
+  scheduler:
+    build:
+      context: .
+    container_name: chat_scheduler
+    command: python app/scheduler.py
+    depends_on:
+      - redis
+      - celery_worker
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+

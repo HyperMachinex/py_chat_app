@@ -1,0 +1,11 @@
+fastapi[standard]
+uvicorn
+python-jose
+passlib
+redis
+aioredis
+websockets
+celery
+jinja2
+aiofiles
+python-dotenv
