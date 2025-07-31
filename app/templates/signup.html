@@ -82,6 +82,22 @@
       margin-top: 10px;
     }
   </style>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+        const token = document.cookie
+          .split("; ")
+          .find(row => row.startsWith("access_token="));
+        const isLoggedIn = token !== undefined;
+    
+        const path = window.location.pathname;
+    
+        if (isLoggedIn && (path === "/" || path === "/login" || path === "/signup")) {
+            window.location.href = "/chat";
+        } else if (!isLoggedIn && path === "/chat") {
+            window.location.href = "/login";
+        }
+    });
+    </script>
 </head>
 <body>
   <div class="signup-container">

@@ -1,17 +1,25 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Request, Form,Depends
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
-import os
 from hashlib import sha256
+from app.redis_client import redis
+from app.utils import create_access_token
+from app.auth import get_current_user
+import os
 
 app = FastAPI()
 
+# mongodb settings
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = AsyncIOMotorClient(mongo_uri)
 db = client["chat_app"]
 users_collection = db["users"]
+
+# redis settings
+
+
 # Templates and static objects
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -32,13 +40,28 @@ async def get_home(request: Request):
 async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
+# app/main.py
+
+from fastapi import Depends
+from app.auth import get_current_user
+
 @app.get("/chat", response_class=HTMLResponse)
-async def get_chat(request: Request):
-    return templates.TemplateResponse("chat.html", {"request": request})
+async def get_chat(request: Request, user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("chat.html", {"request": request, "username": user})
 
 @app.get("/signup", response_class=HTMLResponse)
 async def get_signup(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
+
+@app.get("/logout")
+async def logout(request: Request):
+    token = request.cookies.get("access_token")
+    if token:
+        await redis.delete(f"access_token:{token}")
+    response = RedirectResponse(url="/login", status_code=302)
+    response.delete_cookie("access_token")
+    return response
+
 
 @app.post("/login")
 async def post_login(
@@ -48,14 +71,12 @@ async def post_login(
 ):
     hashed_input = sha256(password.encode()).hexdigest()
     user = await users_collection.find_one({"username": username})
-    
     if user and user["password"] == hashed_input:
-        return RedirectResponse(url=f"/chat?username={username}", status_code=303)
-    else:
-        return templates.TemplateResponse("login.html", {
-            "request": request,
-            "error": "Wrong username or password."
-        })
+        token = await create_access_token({"sub": username})
+        response = JSONResponse(content={"message": "Login successful"})
+        response.set_cookie("access_token", token, httponly=True)
+        return templates.TemplateResponse("chat.html", {"request": request, "username": user})
+    return JSONResponse(status_code=401, content={"error": "Invalid credentials"})
 
 @app.post("/signup")
 async def post_signup(

@@ -8,5 +8,5 @@ if __name__ == "__main__":
     while True:
         generate_log.delay()
         print("New task added to queue")
-        time.sleep(5)
+        time.sleep(20)
 
