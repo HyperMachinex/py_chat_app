@@ -70,28 +70,46 @@
     }
 
     .button-signup {
-      background-color: white;
-      color: #66a6ff;
+      background-color: #66a6ff;
       border: 2px solid #66a6ff;
+      color: white;
     }
 
     .button-signup:hover {
-      background-color: #66a6ff;
-      color: white;
+      background-color: #558de8;
+    }
+
+    .error-message {
+      color: red;
+      margin: 10px 0;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
   <div class="login-container">
     <h2>Login</h2>
-    <form action="/login" method="post">
+
+    <!-- Hata mesajları -->
+    {% if error %}
+      <p class="error-message">{{ error }}</p>
+    {% endif %}
+
+    <!-- Form -->
+    <form method="post" action="/login">
       <input type="text" name="username" placeholder="Username" required />
       <input type="password" name="password" placeholder="Password" required />
       <div class="button-group">
-        <button type="submit" class="button-login">Login</button>
-        <button type="button" class="button-signup" onclick="window.location.href='/signup'">Sign Up</button>
+        <button class="button-login" type="submit">Login</button>
+        <button class="button-signup" onclick="redirectToSignup()" type="button">Sign Up</button>
       </div>
     </form>
   </div>
+
+  <script>
+    function redirectToSignup() {
+      window.location.href = "/signup";
+    }
+  </script>
 </body>
 </html>
