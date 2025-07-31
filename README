@@ -15,3 +15,6 @@ GET celery-task-meta-e71d8922-6d2c-4dd9-80ff-02ef2092273a --> {
  "traceback": null,
 "children": []
 }
+
+ 
+mongodb test --> curl http://localhost:8000/mongo-test
