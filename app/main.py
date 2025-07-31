@@ -2,15 +2,28 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
 
 app = FastAPI()
+
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+client = AsyncIOMotorClient(mongo_uri)
+db = client["chat_app"]
 
 # Templates and static objects
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# Temp db for test
 users_db = {}
+
+@app.get("/mongo-test")
+async def mongo_test():
+    try:
+        await db.command("ping")
+        return {"status": "connected"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
 
 @app.get("/", response_class=HTMLResponse)
 async def get_home(request: Request):

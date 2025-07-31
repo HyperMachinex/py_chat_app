@@ -9,3 +9,4 @@ celery
 jinja2
 aiofiles
 python-dotenv
+motor
