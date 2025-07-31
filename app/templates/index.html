@@ -1,14 +1,41 @@
-<!-- app/templates/index.html -->
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chat App</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
 </head>
+<style>
+    *{
+        background-color: aqua;
+    }
+    body{
+        padding:9rem;
+        margin: 0rem;
+        text-align: center;
+    }
+    .direct-login{
+        background-color: rgb(222, 40, 222);
+        font-size: 25px;
+        width: 25pxrem;
+        text-align: center;
+        padding: 2rem 3rem;
+        cursor: pointer;
+        border: 2px solid rgb(222, 40, 222);
+        border-radius: 10px;
+    }
+</style>
 <body>
-    <h1>Welcome!</h1>
-    <a href="/login">Continue to the site</a>
+
+    <h1>Welcome to the best chat app</h1>
+
+    <button class = "direct-login" onclick="redirectToLogin()">Login</button>
+
+    <script>
+        function redirectToLogin() {
+            window.location.href = "login.html";
+        }
+    </script>
+
 </body>
 </html>
-

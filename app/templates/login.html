@@ -1,44 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login / Register</title>
-    <style>
-        body { font-family: Arial; max-width: 600px; margin: 50px auto; }
-        form { border: 1px solid #ccc; padding: 20px; margin-bottom: 30px; }
-        h2 { margin-top: 0; }
-        label { display: block; margin: 10px 0 5px; }
-        input { width: 90%; padding: 8px; }
-        button { margin-top: 10px; padding: 10px; width: 95%; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(120deg, #89f7fe, #66a6ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      width: 300px;
+      text-align: center;
+    }
+
+    .login-container h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .login-container input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .login-container input:focus {
+      border-color: #66a6ff;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      gap: 10px;
+      padding: 0 5%;
+    }
+
+    .button-group button {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .button-login {
+      background-color: #66a6ff;
+      color: white;
+    }
+
+    .button-login:hover {
+      background-color: #558de8;
+    }
+
+    .button-signup {
+      background-color: #66a6ff;
+      color: #66a6ff;
+      border: 2px solid #66a6ff;
+      color: white;
+    }
+
+    .button-signup:hover {
+      background-color: #66a6ff;
+      color: white;
+    }
+  </style>
 </head>
 <body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <input type="text" placeholder="Username" />
+    <input type="password" placeholder="Password" />
+    <div class="button-group">
+      <button class="button-login" onclick="login()">Login</button>
+      <button class="button-signup" onclick="redirectToSignup()">Sign Up</button>
+    </div>
+  </div>
 
-    <h1>Welcome</h1>
+  <script>
+    function login() {
+      alert("lack of backend connection");
+    }
 
-    <!-- Login Block -->
-    <form action="/login" method="post">
-        <h2>Login</h2>
-        <label>Username</label>
-        <input type="text" name="username" required>
-        
-        <label>Password</label>
-        <input type="password" name="password" required>
-
-        <button type="submit">Login</button>
-    </form>
-
-    <!-- Register Block -->
-    <form action="/signup" method="post">
-        <h2>Create a new account</h2>
-        <label>Username</label>
-        <input type="text" name="new_username" required>
-
-        <label>Password</label>
-        <input type="password" name="new_password" required>
-
-        <button type="submit">Register</button>
-    </form>
-
+    function redirectToSignup() {
+      window.location.href = "signup.html";
+    }
+  </script>
 </body>
 </html>
-
