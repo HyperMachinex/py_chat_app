@@ -33,6 +33,14 @@ async def get_home(request: Request):
 async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
+@app.get("/chat", response_class=HTMLResponse)
+async def get_chat(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request})
+
+@app.get("/signup", response_class=HTMLResponse)
+async def get_signup(request: Request):
+    return templates.TemplateResponse("signup.html", {"request": request})
+
 @app.post("/login")
 async def post_login(
     request: Request,
@@ -42,7 +50,7 @@ async def post_login(
     user_password = users_db.get(username)
     if user_password and user_password == password:
         # Log in successfull forward chat page
-        response = templates.TemplateResponse("index.html", {"request": request, "username": username})
+        response = templates.TemplateResponse("chat.html", {"request": request, "username": username})
         return response
     else:
         return templates.TemplateResponse("login.html", {

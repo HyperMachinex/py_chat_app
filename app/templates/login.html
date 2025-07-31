@@ -70,10 +70,9 @@
     }
 
     .button-signup {
-      background-color: #66a6ff;
+      background-color: white;
       color: #66a6ff;
       border: 2px solid #66a6ff;
-      color: white;
     }
 
     .button-signup:hover {
@@ -85,22 +84,14 @@
 <body>
   <div class="login-container">
     <h2>Login</h2>
-    <input type="text" placeholder="Username" />
-    <input type="password" placeholder="Password" />
-    <div class="button-group">
-      <button class="button-login" onclick="login()">Login</button>
-      <button class="button-signup" onclick="redirectToSignup()">Sign Up</button>
-    </div>
+    <form action="/login" method="post">
+      <input type="text" name="username" placeholder="Username" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <div class="button-group">
+        <button type="submit" class="button-login">Login</button>
+        <button type="button" class="button-signup" onclick="window.location.href='/signup'">Sign Up</button>
+      </div>
+    </form>
   </div>
-
-  <script>
-    function login() {
-      alert("lack of backend connection");
-    }
-
-    function redirectToSignup() {
-      window.location.href = "signup.html";
-    }
-  </script>
 </body>
 </html>

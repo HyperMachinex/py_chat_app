@@ -6,34 +6,34 @@
     <title>Welcome</title>
 </head>
 <style>
-    *{
+    * {
         background-color: aqua;
     }
-    body{
-        padding:9rem;
-        margin: 0rem;
+    body {
+        padding: 9rem;
+        margin: 0;
         text-align: center;
     }
-    .direct-login{
+    .direct-login {
         background-color: rgb(222, 40, 222);
         font-size: 25px;
-        width: 25pxrem;
-        text-align: center;
+        width: 25rem;
         padding: 2rem 3rem;
         cursor: pointer;
         border: 2px solid rgb(222, 40, 222);
         border-radius: 10px;
+        color: white;
     }
 </style>
 <body>
 
     <h1>Welcome to the best chat app</h1>
 
-    <button class = "direct-login" onclick="redirectToLogin()">Login</button>
+    <button class="direct-login" onclick="redirectToLogin()">Login</button>
 
     <script>
         function redirectToLogin() {
-            window.location.href = "login.html";
+            window.location.href = "/login";
         }
     </script>
 
