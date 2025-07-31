@@ -16,5 +16,12 @@ GET celery-task-meta-e71d8922-6d2c-4dd9-80ff-02ef2092273a --> {
 "children": []
 }
 
- 
+mongodb container --> docker exec -it chat_mongo mongosh
 mongodb test --> curl http://localhost:8000/mongo-test
+
+mongosh commands to see users -->   show dbs
+                                    use chat_app
+                                    show collections
+                                    db.users.find().pretty()
+
+
