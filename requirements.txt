@@ -2,11 +2,12 @@ fastapi[standard]
 uvicorn
 python-jose
 passlib
-redis
-aioredis
+redis>=4.2.0
 websockets
 celery
 jinja2
 aiofiles
 python-dotenv
 motor
+jose
+datetime
