@@ -69,14 +69,16 @@ async def post_login(
     username: str = Form(...),
     password: str = Form(...)
 ):
-    hashed_input = sha256(password.encode()).hexdigest()
     user = await users_collection.find_one({"username": username})
-    if user and user["password"] == hashed_input:
+    if user and user["password"] == sha256(password.encode()).hexdigest():
         token = await create_access_token({"sub": username})
         response = JSONResponse(content={"message": "Login successful"})
         response.set_cookie("access_token", token, httponly=True)
         return templates.TemplateResponse("chat.html", {"request": request, "username": user})
-    return JSONResponse(status_code=401, content={"error": "Invalid credentials"})
+    return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": "Wrong username or password."
+        })
 
 @app.post("/signup")
 async def post_signup(
