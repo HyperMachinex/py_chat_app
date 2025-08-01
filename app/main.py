@@ -9,6 +9,7 @@ from app.utils import create_access_token
 from app.auth import get_current_user
 import os
 
+router = APIRouter()
 app = FastAPI()
 # mongodb settings
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
@@ -30,6 +31,12 @@ async def mongo_test():
         return {"status": "connected"}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
+
+@app.get("/users")
+async def get_all_users():
+    users = await db["users"].find({}, {"_id": 0, "username": 1}).to_list(length=100)
+    usernames = [user["username"] for user in users]
+    return JSONResponse(content={"users": usernames})
 
 @app.get("/", response_class=HTMLResponse)
 async def get_home(request: Request):
@@ -60,6 +67,7 @@ async def logout(request: Request):
     response = RedirectResponse(url="/login", status_code=302)
     response.delete_cookie("access_token")
     return response
+
 
 
 @app.post("/login")
