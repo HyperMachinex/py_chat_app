@@ -12,7 +12,6 @@ async def create_access_token(data: dict):
     to_encode = data.copy()
     to_encode.update({"exp": expire})
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
     key = f"access_token:{token}"
     await redis.set(key, data["sub"], ex=EXPIRE_MINUTES * 60)
     return token

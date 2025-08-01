@@ -103,30 +103,36 @@
   </div>
 
   <script>
-    // Oturum varsa direkt chat'e git
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      window.location.href = "/chat";
+    async function checkTokenAndRedirect() {
+      const res = await fetch("/verify-token");
+      const data = await res.json();
+      if (data.valid) {
+        // Redis'te token hâlâ geçerli → yönlendir
+        window.location.href = "/chat";
+      }
     }
-
+  
+    // Sayfa yüklenince kontrol et
+    window.addEventListener("DOMContentLoaded", checkTokenAndRedirect);
+  
     document.getElementById("loginForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-
+  
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
-
+  
       const formData = new FormData();
       formData.append("username", username);
       formData.append("password", password);
-
+  
       try {
         const res = await fetch("/login", {
           method: "POST",
           body: formData
         });
-
+  
         const data = await res.json();
-
+  
         if (data.access_token && data.username) {
           localStorage.setItem("access_token", data.access_token);
           localStorage.setItem("username", data.username);
@@ -139,10 +145,11 @@
         document.getElementById("error").textContent = "An error occurred.";
       }
     });
-
+  
     function redirectToSignup() {
       window.location.href = "/signup";
     }
   </script>
+  
 </body>
 </html>

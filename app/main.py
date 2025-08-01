@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 from hashlib import sha256
 from app.redis_client import redis
-from app.utils import create_access_token
+from app.utils import create_access_token, verify_token
 from app.auth import get_current_user
 import os
 
@@ -47,13 +47,22 @@ async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 # app/main.py
+@app.get("/verify-token")
+async def verify_token_route(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        return JSONResponse(content={"valid": False})
 
-from fastapi import Depends
-from app.auth import get_current_user
+    payload = await verify_token(token)
+    if not payload:
+        return JSONResponse(content={"valid": False})
+
+    return JSONResponse(content={"valid": True, "username": payload["sub"]})
 
 @app.get("/chat", response_class=HTMLResponse)
 async def get_chat(request: Request, user: str = Depends(get_current_user)):
     return templates.TemplateResponse("chat.html", {"request": request, "username": user})
+
 
 @app.get("/signup", response_class=HTMLResponse)
 async def get_signup(request: Request):
@@ -69,7 +78,6 @@ async def logout(request: Request):
     return response
 
 
-
 @app.post("/login")
 async def post_login(
     request: Request,
@@ -79,13 +87,12 @@ async def post_login(
     user = await users_collection.find_one({"username": username})
     if user and user["password"] == sha256(password.encode()).hexdigest():
         token = await create_access_token({"sub": username})
-        response = JSONResponse(content={"message": "Login successful"})
+        response = JSONResponse(content={"access_token": token, "username": username})
         response.set_cookie("access_token", token, httponly=True)
-        return templates.TemplateResponse("chat.html", {"request": request, "username": user})
-    return templates.TemplateResponse("login.html", {
-            "request": request,
-            "error": "Wrong username or password."
-        })
+        return response
+
+    return JSONResponse(content={"error": "Wrong username or password"}, status_code=401)
+
 
 @app.post("/signup")
 async def post_signup(

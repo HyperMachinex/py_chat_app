@@ -206,11 +206,17 @@
       div.scrollIntoView({ behavior: "smooth" });
     }
 
-    document.getElementById("logoutBtn").addEventListener("click", () => {
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+  // Sunucu tarafında logout işlemini yap
+      await fetch("/logout");
+
+  // LocalStorage'dan token ve username'i sil
       localStorage.removeItem("access_token");
       localStorage.removeItem("username");
+
+      // Login sayfasına yönlendir
       window.location.href = "/login";
-    });
+});
 
     window.onload = fetchUsers;
   </script>
