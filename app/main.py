@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form,Depends
+from fastapi import FastAPI, Request, Form, Depends, APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -10,7 +10,6 @@ from app.auth import get_current_user
 import os
 
 app = FastAPI()
-
 # mongodb settings
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = AsyncIOMotorClient(mongo_uri)

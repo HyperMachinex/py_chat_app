@@ -1,19 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Private Chat</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #sidebar {
+      width: 250px;
+      background: #2c3e50;
+      color: white;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sidebar h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .chat-item {
+      padding: 10px;
+      border-bottom: 1px solid #34495e;
+      cursor: pointer;
+    }
+
+    .chat-item:hover {
+      background: #34495e;
+    }
+
+    #chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #ecf0f1;
+    }
+
+    #chat-header {
+      background: #3498db;
+      color: white;
+      padding: 10px;
+    }
+
+    #chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 60%;
+      background: #bdc3c7;
+    }
+
+    .message.self {
+      background: #a2d5ab;
+      align-self: flex-end;
+    }
+
+    #chat-input {
+      display: flex;
+      padding: 10px;
+      background: #fff;
+      border-top: 1px solid #ccc;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #sendBtn {
+      padding: 10px 20px;
+      margin-left: 10px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #logoutBtn {
+      margin-top: 10px;
+      padding: 6px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <h1>There will be chat</h1>
-    <button onclick="logout()">Logout</button>
-<script>
-function logout() {
-  document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-  window.location.href = "/login";
-}
-</script>
 
+  <div id="sidebar">
+    <h2>Conversations</h2>
+    <div class="chat-list" id="chatList">
+      <!-- dynamic list of users/chat IDs -->
+    </div>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <div id="chat-area">
+    <div id="chat-header">Select a chat</div>
+    <div id="chat-box"></div>
+    <div id="chat-input">
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    let currentReceiver = null;
+
+    const chatList = document.getElementById("chatList");
+    const chatHeader = document.getElementById("chat-header");
+    const chatBox = document.getElementById("chat-box");
+
+    const dummyChats = ["chat1", "chat2", "chat3"];
+
+    dummyChats.forEach(user => {
+      const div = document.createElement("div");
+      div.className = "chat-item";
+      div.textContent = user;
+      div.onclick = () => selectChat(user);
+      chatList.appendChild(div);
+    });
+
+    function selectChat(username) {
+      currentReceiver = username;
+      chatHeader.textContent = `Chat with ${username}`;
+      chatBox.innerHTML = ""; 
+    }
+
+    document.getElementById("sendBtn").addEventListener("click", () => {
+      const input = document.getElementById("messageInput");
+      const message = input.value.trim();
+      if (!message || !currentReceiver) return;
+
+      addMessage(message, true);
+
+      // TODO: Websocket communication
+      input.value = "";
+    });
+
+    function addMessage(text, isSelf = false) {
+      const div = document.createElement("div");
+      div.className = "message" + (isSelf ? " self" : "");
+      div.textContent = text;
+      chatBox.appendChild(div);
+      div.scrollIntoView({ behavior: "smooth" });
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("access_token");
+      window.location.href = "/login";
+    });
+    
+  </script>
 </body>
 </html>
