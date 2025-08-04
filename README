@@ -1,3 +1,13 @@
+To run system -> `docker compose up --build`
+To stop --> `docker compose down -v`
+
+Python chat app written in fastapi. 
+Messages and credentials are storing in mongodb.
+Celery task queue and jwt tokens are stored in REDIS.
+All messages are deleted in 30 seconds via Celery.
+
+# Useful Commands
+
 Flower --> http://localhost:5555
 
 fastapi container --> docker compose exec -it fastapi bash

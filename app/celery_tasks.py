@@ -18,5 +18,5 @@ def delete_message_task(message_id: str):
 async def _delete_message(message_id: str):
     await messages_collection.update_one(
         {"_id": ObjectId(message_id)},
-        {"$set": {"message": "Bu mesaj silindi", "deleted": True}}
+        {"$set": {"message": "Deleted.", "deleted": True}}
     )
