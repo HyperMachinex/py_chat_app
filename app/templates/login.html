@@ -90,8 +90,6 @@
   <div class="login-container">
     <h2>Login</h2>
     <p id="error" class="error-message"></p>
-
-    <!-- JS ile yönetilen form -->
     <form id="loginForm">
       <input type="text" name="username" id="username" placeholder="Username" required />
       <input type="password" name="password" id="password" placeholder="Password" required />
@@ -107,14 +105,12 @@
       const res = await fetch("/verify-token");
       const data = await res.json();
       if (data.valid) {
-        // Redis'te token hâlâ geçerli → yönlendir
         window.location.href = "/chat";
       }
     }
   
-    // Sayfa yüklenince kontrol et
     window.addEventListener("DOMContentLoaded", checkTokenAndRedirect);
-  
+    
     document.getElementById("loginForm").addEventListener("submit", async function (e) {
       e.preventDefault();
   

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Private Chat</title>
+  <title>The Best Chat App</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -146,6 +146,7 @@
     const chatBox = document.getElementById("chat-box");
     let socket = null;
 
+    // get users from db to list
     async function fetchUsers() {
       try {
         const res = await fetch('/users');
@@ -163,7 +164,7 @@
         console.error("Failed to load users", err);
       }
     }
-    
+    // live chat
     async function fetchAndRenderMessages() {
       try {
         const res = await fetch(`/messages?sender=${username}&receiver=${currentReceiver}`);
@@ -222,7 +223,7 @@
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.sender === currentReceiver || data.sender === username) {
-          fetchAndRenderMessages();  // WebSocket ile yeni mesaj geldiğinde de güncelle
+          fetchAndRenderMessages();
         }
       };
 
@@ -231,43 +232,8 @@
       };
 
       if (pollInterval) clearInterval(pollInterval);
-      pollInterval = setInterval(fetchAndRenderMessages, 1000); // 1 saniyede bir mesajları güncelle
+      pollInterval = setInterval(fetchAndRenderMessages, 1000);
     }
-
-
-    // function selectChat(receiver) {
-    //   currentReceiver = receiver;
-    //   chatHeader.textContent = `Chat with ${receiver}`;
-    //   chatBox.innerHTML = "";
-
-    //   // WebSocket bağlantısı
-    //   if (socket) socket.close();
-    //   socket = new WebSocket(`ws://${window.location.host}/ws/${username}`);
-
-    //   socket.onopen = () => {
-    //     console.log("WebSocket connected");
-    //   };
-
-    //   socket.onmessage = (event) => {
-    //     const data = JSON.parse(event.data);
-    //     if (data.sender === currentReceiver || data.sender === username) {
-    //       addMessage(`${data.sender}: ${data.message}`, data.sender === username, data.timestamp);
-    //     }
-    //   };
-
-    //   socket.onerror = (err) => {
-    //     console.error("WebSocket error", err);
-    //   };
-
-    //   // Geçmiş mesajları getir
-    //   fetch(`/messages?sender=${username}&receiver=${receiver}`)
-    //     .then(res => res.json())
-    //     .then(data => {
-    //       data.messages.forEach(msg => {
-    //         addMessage(`${msg.sender}: ${msg.message}`, msg.sender === username, msg.timestamp);
-    //       });
-    //     });
-    // }
 
     document.getElementById("sendBtn").addEventListener("click", () => {
       const input = document.getElementById("messageInput");

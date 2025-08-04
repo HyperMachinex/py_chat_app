@@ -44,7 +44,6 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
             receiver = data["receiver"]
             message = data["message"]
 
-            # MongoDB'ye mesajı kaydet
             result = await messages_collection.insert_one({
                 "sender": sender,
                 "receiver": receiver,
@@ -53,11 +52,10 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
                 "deleted": False
             })
 
-            # Celery ile 30 saniye sonra "silindi" olarak güncelle
+            # celery delete function
             message_id = str(result.inserted_id)
             delete_message_task.apply_async(args=[message_id], countdown=30)
 
-            # Mesajı gönder
             payload = {
                 "sender": sender,
                 "receiver": receiver,
@@ -173,9 +171,9 @@ async def get_messages(sender: str = Query(...), receiver: str = Query(...)):
 
     messages = []
     async for msg in messages_cursor:
-        msg["_id"] = str(msg["_id"])  # ObjectId -> string
+        msg["_id"] = str(msg["_id"])
         if "timestamp" in msg:
-            msg["timestamp"] = msg["timestamp"].isoformat()  # datetime -> string
+            msg["timestamp"] = msg["timestamp"].isoformat()
         messages.append(msg)
 
     return JSONResponse(content={"messages": messages})

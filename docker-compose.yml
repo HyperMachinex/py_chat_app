@@ -56,22 +56,6 @@ services:
     environment:
       - FLOWER_UNAUTHENTICATED_API=true
 
-  scheduler:
-    build:
-      context: .
-    container_name: chat_scheduler
-    command: python app/scheduler.py
-    depends_on:
-      - redis
-      - celery_worker
-    volumes:
-      - .:/app
-    working_dir: /app
-    environment:
-      - PYTHONPATH=/app
-      - MONGO_URI=mongodb://chat_mongo:27017
-      - REDIS_URI=redis://chat_redis:6379/0
-
 volumes:
   mongo_data:
 
