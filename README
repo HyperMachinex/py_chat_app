@@ -1,5 +1,5 @@
-To run system -> `docker compose up --build`
-To stop --> `docker compose down -v`
+To run system -> **`docker compose up --build`**
+To stop --> **`docker compose down -v`**
 
 Python chat app written in fastapi. 
 Messages and credentials are storing in mongodb.
