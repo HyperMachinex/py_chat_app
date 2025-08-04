@@ -78,6 +78,14 @@
       align-self: flex-end;
     }
 
+    .message time {
+      display: block;
+      font-size: 12px;
+      margin-top: 4px;
+      color: #555;
+      text-align: right;
+    }
+
     #chat-input {
       display: flex;
       padding: 10px;
@@ -142,7 +150,7 @@
       try {
         const res = await fetch('/users');
         const data = await res.json();
-        const users = data.users.filter(user => user !== username); // kendini gösterme
+        const users = data.users.filter(user => user !== username);
         chatList.innerHTML = "";
         users.forEach(user => {
           const div = document.createElement("div");
@@ -161,8 +169,6 @@
       chatHeader.textContent = `Chat with ${receiver}`;
       chatBox.innerHTML = "";
 
-      // geçmiş mesajlar için ek API çağrısı yapılabilir
-
       if (socket) socket.close();
 
       socket = new WebSocket(`ws://${window.location.host}/ws/${username}`);
@@ -174,7 +180,7 @@
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.sender === currentReceiver || data.sender === username) {
-          addMessage(`${data.sender}: ${data.message}`, data.sender === username);
+          addMessage(`${data.sender}: ${data.message}`, data.sender === username, data.timestamp);
         }
       };
 
@@ -188,35 +194,55 @@
       const message = input.value.trim();
       if (!message || !currentReceiver || !socket || socket.readyState !== WebSocket.OPEN) return;
 
+      const timestamp = new Date().toISOString();
+
       socket.send(JSON.stringify({
         sender: username,
         receiver: currentReceiver,
-        message: message
+        message: message,
+        timestamp: timestamp
       }));
 
-      addMessage(message, true);
+      addMessage(message, true, timestamp);
       input.value = "";
     });
 
-    function addMessage(text, isSelf = false) {
+    function addMessage(text, isSelf = false, timestamp = null) {
       const div = document.createElement("div");
       div.className = "message" + (isSelf ? " self" : "");
-      div.textContent = text;
+
+      const msgText = document.createElement("div");
+      msgText.textContent = text;
+
+      const time = document.createElement("div");
+      time.style.fontSize = "12px";
+      time.style.marginTop = "4px";
+      time.style.textAlign = isSelf ? "right" : "left";
+      time.style.color = "#555";
+      const timeStr = timestamp
+        ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      time.textContent = timeStr;
+
+      div.appendChild(msgText);
+      div.appendChild(time);
       chatBox.appendChild(div);
       div.scrollIntoView({ behavior: "smooth" });
     }
+    
+    document.getElementById("messageInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+          e.preventDefault(); // form submit olmasın
+          document.getElementById("sendBtn").click(); // send butonunu tetikle
+      }
+    });
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
-  // Sunucu tarafında logout işlemini yap
       await fetch("/logout");
-
-  // LocalStorage'dan token ve username'i sil
       localStorage.removeItem("access_token");
       localStorage.removeItem("username");
-
-      // Login sayfasına yönlendir
       window.location.href = "/login";
-});
+    });
 
     window.onload = fetchUsers;
   </script>

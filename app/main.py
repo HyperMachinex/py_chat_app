@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Depends, APIRouter
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Form, Depends, APIRouter, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -11,18 +11,59 @@ import os
 
 router = APIRouter()
 app = FastAPI()
-# mongodb settings
+
+# MongoDB
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = AsyncIOMotorClient(mongo_uri)
 db = client["chat_app"]
 users_collection = db["users"]
 
-# redis settings
 
-
-# Templates and static objects
+# Templates & statics
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+# ===========================
+#      WebSocket Section
+# ===========================
+
+active_connections: dict[str, WebSocket] = {}
+
+@app.websocket("/ws/{username}")
+async def websocket_endpoint(websocket: WebSocket, username: str):
+    token = websocket.cookies.get("access_token")
+    if not token or not await verify_token(token):
+        await websocket.close(code=1008)
+        return
+
+    await websocket.accept()
+    active_connections[username] = websocket
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            sender = data.get("sender")
+            receiver = data.get("receiver")
+            message = data.get("message")
+
+            if not receiver or not message:
+                continue
+
+            # Mesajı alıcıya gönder
+            if receiver in active_connections:
+                await active_connections[receiver].send_json({
+                    "sender": sender,
+                    "message": message
+                })
+    except WebSocketDisconnect:
+        if username in active_connections:
+            del active_connections[username]
+
+
+# ===========================
+#         API Routes
+# ===========================
 
 @app.get("/mongo-test")
 async def mongo_test():
@@ -46,23 +87,19 @@ async def get_home(request: Request):
 async def get_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-# app/main.py
 @app.get("/verify-token")
 async def verify_token_route(request: Request):
     token = request.cookies.get("access_token")
     if not token:
         return JSONResponse(content={"valid": False})
-
     payload = await verify_token(token)
     if not payload:
         return JSONResponse(content={"valid": False})
-
     return JSONResponse(content={"valid": True, "username": payload["sub"]})
 
 @app.get("/chat", response_class=HTMLResponse)
 async def get_chat(request: Request, user: str = Depends(get_current_user)):
     return templates.TemplateResponse("chat.html", {"request": request, "username": user})
-
 
 @app.get("/signup", response_class=HTMLResponse)
 async def get_signup(request: Request):
@@ -76,7 +113,6 @@ async def logout(request: Request):
     response = RedirectResponse(url="/login", status_code=302)
     response.delete_cookie("access_token")
     return response
-
 
 @app.post("/login")
 async def post_login(
@@ -92,7 +128,6 @@ async def post_login(
         return response
 
     return JSONResponse(content={"error": "Wrong username or password"}, status_code=401)
-
 
 @app.post("/signup")
 async def post_signup(
@@ -113,4 +148,3 @@ async def post_signup(
         "password": hashed_password
     })
     return RedirectResponse(url="/login", status_code=303)
-
