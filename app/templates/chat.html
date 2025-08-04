@@ -212,32 +212,8 @@
         timestamp: timestamp
       }));
 
-      addMessage(message, true, timestamp);
       input.value = "";
     });
-
-    function addMessage(text, isSelf = false, timestamp = null) {
-      const div = document.createElement("div");
-      div.className = "message" + (isSelf ? " self" : "");
-
-      const msgText = document.createElement("div");
-      msgText.textContent = text;
-
-      const time = document.createElement("div");
-      time.style.fontSize = "12px";
-      time.style.marginTop = "4px";
-      time.style.textAlign = isSelf ? "right" : "left";
-      time.style.color = "#555";
-      const timeStr = timestamp
-        ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      time.textContent = timeStr;
-
-      div.appendChild(msgText);
-      div.appendChild(time);
-      chatBox.appendChild(div);
-      div.scrollIntoView({ behavior: "smooth" });
-    }
 
     document.getElementById("messageInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
