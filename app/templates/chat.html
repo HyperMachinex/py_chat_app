@@ -169,8 +169,8 @@
       chatHeader.textContent = `Chat with ${receiver}`;
       chatBox.innerHTML = "";
 
+      // WebSocket bağlantısı
       if (socket) socket.close();
-
       socket = new WebSocket(`ws://${window.location.host}/ws/${username}`);
 
       socket.onopen = () => {
@@ -187,6 +187,15 @@
       socket.onerror = (err) => {
         console.error("WebSocket error", err);
       };
+
+      // Geçmiş mesajları getir
+      fetch(`/messages?sender=${username}&receiver=${receiver}`)
+        .then(res => res.json())
+        .then(data => {
+          data.messages.forEach(msg => {
+            addMessage(`${msg.sender}: ${msg.message}`, msg.sender === username, msg.timestamp);
+          });
+        });
     }
 
     document.getElementById("sendBtn").addEventListener("click", () => {
@@ -229,11 +238,11 @@
       chatBox.appendChild(div);
       div.scrollIntoView({ behavior: "smooth" });
     }
-    
+
     document.getElementById("messageInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-          e.preventDefault(); // form submit olmasın
-          document.getElementById("sendBtn").click(); // send butonunu tetikle
+        e.preventDefault();
+        document.getElementById("sendBtn").click();
       }
     });
 

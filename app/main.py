@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Form, Depends, APIRouter, HTTPException
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, Form, Depends, APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -8,6 +8,8 @@ from app.redis_client import redis
 from app.utils import create_access_token, verify_token
 from app.auth import get_current_user
 import os
+from datetime import datetime
+from app.celery_tasks import delete_message_task
 
 router = APIRouter()
 app = FastAPI()
@@ -17,7 +19,7 @@ mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 client = AsyncIOMotorClient(mongo_uri)
 db = client["chat_app"]
 users_collection = db["users"]
-
+messages_collection = db["messages"]
 
 # Templates & statics
 templates = Jinja2Templates(directory="app/templates")
@@ -29,36 +31,46 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 # ===========================
 
 active_connections: dict[str, WebSocket] = {}
+connected_users = {}
 
 @app.websocket("/ws/{username}")
 async def websocket_endpoint(websocket: WebSocket, username: str):
-    token = websocket.cookies.get("access_token")
-    if not token or not await verify_token(token):
-        await websocket.close(code=1008)
-        return
-
     await websocket.accept()
-    active_connections[username] = websocket
-
+    connected_users[username] = websocket
     try:
         while True:
             data = await websocket.receive_json()
-            sender = data.get("sender")
-            receiver = data.get("receiver")
-            message = data.get("message")
+            sender = data["sender"]
+            receiver = data["receiver"]
+            message = data["message"]
 
-            if not receiver or not message:
-                continue
+            # MongoDB'ye mesajı kaydet
+            result = await messages_collection.insert_one({
+                "sender": sender,
+                "receiver": receiver,
+                "message": message,
+                "timestamp": datetime.utcnow(),
+                "deleted": False
+            })
 
-            # Mesajı alıcıya gönder
-            if receiver in active_connections:
-                await active_connections[receiver].send_json({
-                    "sender": sender,
-                    "message": message
-                })
+            # Celery ile 30 saniye sonra "silindi" olarak güncelle
+            message_id = str(result.inserted_id)
+            delete_message_task.apply_async(args=[message_id], countdown=30)
+
+            # Mesajı gönder
+            payload = {
+                "sender": sender,
+                "receiver": receiver,
+                "message": message
+            }
+
+            if receiver in connected_users:
+                await connected_users[receiver].send_json(payload)
+
+            await websocket.send_json(payload)
+
     except WebSocketDisconnect:
-        if username in active_connections:
-            del active_connections[username]
+        del connected_users[username]
 
 
 # ===========================
@@ -148,3 +160,22 @@ async def post_signup(
         "password": hashed_password
     })
     return RedirectResponse(url="/login", status_code=303)
+
+
+@app.get("/messages")
+async def get_messages(sender: str = Query(...), receiver: str = Query(...)):
+    messages_cursor = db["messages"].find({
+        "$or": [
+            {"sender": sender, "receiver": receiver},
+            {"sender": receiver, "receiver": sender}
+        ]
+    }).sort("timestamp", 1)
+
+    messages = []
+    async for msg in messages_cursor:
+        msg["_id"] = str(msg["_id"])  # ObjectId -> string
+        if "timestamp" in msg:
+            msg["timestamp"] = msg["timestamp"].isoformat()  # datetime -> string
+        messages.append(msg)
+
+    return JSONResponse(content={"messages": messages})

@@ -1,12 +1,22 @@
 from celery_worker import celery_app
 from datetime import datetime
-import time
+from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
+import os
+import asyncio
+
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+client = AsyncIOMotorClient(mongo_uri)
+db = client["chat_app"]
+messages_collection = db["messages"]
 
 @celery_app.task
-def generate_log():
-    now = datetime.utcnow().isoformat()
-    print(f"[{now}]  Worker is processing...")
-    time.sleep(2)  
-    print(f"[{now}]  Task completed.")
-    return now
+def delete_message_task(message_id: str):
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(_delete_message(message_id))
 
+async def _delete_message(message_id: str):
+    await messages_collection.update_one(
+        {"_id": ObjectId(message_id)},
+        {"$set": {"message": "Bu mesaj silindi", "deleted": True}}
+    )
